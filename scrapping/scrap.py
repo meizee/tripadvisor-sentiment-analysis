@@ -15,11 +15,11 @@ url = url.replace("place",place)
 url = url.replace("state",state)
 links=[]
 location_names=[]
-for i in range(0,30,10):
+for i in range(0,15,10):
     target_url=url.replace("*",str(i))
     driver.get(target_url)
     bsobj = BeautifulSoup(driver.page_source, 'html.parser')
-    print("strat")
+    print("start")
     place_div=bsobj.find('div',{'class':'fVbwn cdAAV cagLQ eZTON dofsx'})
     if place_div is None:
             break
@@ -40,14 +40,26 @@ reviews_list = []
 reviews_location=[]
 rating_list = []
 date_list = []
+target_links = []
 count=0
 for link in links:
     location=location_names[count]
     count=count+1
     flag=0
-    for i in range(5,20,5):
+    maks=0
+    
+    # if link == 'https://www.tripadvisor.com/Attraction_Review-g297698-d939620-Reviews-or{}-Nusa_Dua_Beach-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html#REVIEWS':
+    #     maks= 30
+    # elif link == 'https://www.tripadvisor.com/Attraction_Review-g297698-d939620-Reviews-or{}-Nusa_Dua_Beach-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html#REVIEWS':
+    #     maks= 20
+    # elif link == 'https://www.tripadvisor.com/Attraction_Review-g297698-d939620-Reviews-or{}-Nusa_Dua_Beach-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html#REVIEWS':
+    #     maks= 20
+    # elif link == 'https://www.tripadvisor.com/Attraction_Review-g297698-d939620-Reviews-or{}-Nusa_Dua_Beach-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html#REVIEWS':
+    #     maks= 20
+
+    for i in range(0,50,10):
         target_link=link.format(i)
-        print(target_link)
+        target_links.append(target_link)
         html2 = driver.get(target_link)
         bsobj2 = BeautifulSoup(driver.page_source,'html.parser')    
         reviews_section=bsobj2.find('div',{'class':'dHjBB'})
@@ -60,7 +72,6 @@ for link in links:
         if(len(reviews_div)==0 or 1==flag):
             flag=0
             break
-        print(target_link)
       
         for r, rs, d in zip(reviews_div, rating_svg, date_div):
             # print(rs['aria-label'])
@@ -70,11 +81,13 @@ for link in links:
             reviews_list.append(str(r.span.text.strip()))
             reviews_location.append(location)
             rating_list.append(rs['title'])
-            print(d.text.strip())
+            # print(d.text.strip())
             date_list.append(d.text.strip())
             #sleep(1)
-            print(str(r.span.text.strip()))
-            print(rs['title'])
+            # print(str(r.span.text.strip()))
+            # print(rs['title'])
         
         dataframe = pd.DataFrame({'location':reviews_location,'content':reviews_list, 'rating':rating_list, 'date':date_list})
-        dataframe.to_csv("tripadvisor_reviews_BALI.csv",index=True)#saving to the csv, you can change the name
+        dataframe.to_csv("./tripadvisor_reviews_nusadua.csv",index=True)#saving to the csv, you can change the name
+    
+    # print(target_links)
