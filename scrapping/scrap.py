@@ -41,7 +41,7 @@ for i in range(0, pages_to_scrape):
         # Grab the title
         title = container[j].find_element_by_xpath(".//div[contains(@data-test-target, 'review-title')]").text
         #Grab the review
-        review = container[j].find_element_by_xpath(".//q[@class='IRsGHoPm']").text.replace("\n", "  ")
+        review = container[j].find_element_by_xpath(".//q[@class='NejBf']").text.replace("\n", "  ")
         #Grab the data
         date = " ".join(dates[j].text.split(" ")[-2:])
         
