@@ -7,7 +7,7 @@ from time import sleep
 driver = webdriver.Chrome(ChromeDriverManager().install())
 driver.implicitly_wait(30)
 # https://www.tripadvisor.com/Attractions-g297698-Activities-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html
-url = "https://www.tripadvisor.com/Attractions-g297698-Activities-oa*-place_state.html" 
+url = "https://www.tripadvisor.com/Attractions-g297698-Activities-oa*-place_state.html" #ganti g....
 # Nusa_Dua_Nusa_Dua_Peninsula_Bali
 place="Nusa_Dua" #You can replace your place here.
 state="Nusa_Dua_Peninsula_Bali"       #You can replace your state here.
@@ -42,12 +42,14 @@ rating_list = []
 date_list = []
 target_links = []
 count=0
+# print(links)
+# for word in links:
+#     print(word)
 for link in links:
     location=location_names[count]
     count=count+1
     flag=0
     maks=0
-    
     # if link == 'https://www.tripadvisor.com/Attraction_Review-g297698-d939620-Reviews-or{}-Nusa_Dua_Beach-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html#REVIEWS':
     #     maks= 30
     # elif link == 'https://www.tripadvisor.com/Attraction_Review-g297698-d939620-Reviews-or{}-Nusa_Dua_Beach-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html#REVIEWS':
@@ -56,7 +58,6 @@ for link in links:
     #     maks= 20
     # elif link == 'https://www.tripadvisor.com/Attraction_Review-g297698-d939620-Reviews-or{}-Nusa_Dua_Beach-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html#REVIEWS':
     #     maks= 20
-
     for i in range(0,50,10):
         target_link=link.format(i)
         target_links.append(target_link)
@@ -65,7 +66,7 @@ for link in links:
         reviews_section=bsobj2.find('div',{'class':'dHjBB'})
         if reviews_section is None:
             break
-        reviews_div=reviews_section.findChildren("div",{'class':'WlYyy diXIH dDKKM'} , recursive=True)
+        reviews_div=reviews_section.findChildren("span",{'class':'NejBf'} , recursive=True)
         rating_svg = reviews_section.findChildren("svg", {'class':'RWYkj d H0'}, recursive=True)
         date_div=reviews_section.findChildren("div", {'class':'WlYyy diXIH cspKb bQCoY'}, recursive=True)
 
@@ -75,10 +76,10 @@ for link in links:
       
         for r, rs, d in zip(reviews_div, rating_svg, date_div):
             # print(rs['aria-label'])
-            if r.span is None or rs is None or d is None:
+            if r is None or rs is None or d is None:
                 flag=1
                 break
-            reviews_list.append(str(r.span.text.strip()))
+            reviews_list.append(str(r.text.strip()))
             reviews_location.append(location)
             rating_list.append(rs['title'])
             # print(d.text.strip())
@@ -86,6 +87,7 @@ for link in links:
             #sleep(1)
             # print(str(r.span.text.strip()))
             # print(rs['title'])
+
         
         dataframe = pd.DataFrame({'location':reviews_location,'content':reviews_list, 'rating':rating_list, 'date':date_list})
         dataframe.to_csv("./tripadvisor_reviews_nusadua.csv",index=True)#saving to the csv, you can change the name
