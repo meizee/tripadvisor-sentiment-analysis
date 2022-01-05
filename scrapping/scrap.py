@@ -1,55 +1,80 @@
-import csv #This package lets us save data to a csv file
-from selenium import webdriver #The Selenium package we'll need
-from selenium.webdriver.common.keys import Keys
-import time #This package lets us pause execution for a bit
+from selenium import webdriver
+from bs4 import BeautifulSoup
+from webdriver_manager.chrome import ChromeDriverManager
+from random import randint
+import pandas as pd
+from time import sleep
+driver = webdriver.Chrome(ChromeDriverManager().install())
+driver.implicitly_wait(30)
+# https://www.tripadvisor.com/Attractions-g297698-Activities-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html
+url = "https://www.tripadvisor.com/Attractions-g297698-Activities-oa*-place_state.html" 
+# Nusa_Dua_Nusa_Dua_Peninsula_Bali
+place="Nusa_Dua" #You can replace your place here.
+state="Nusa_Dua_Peninsula_Bali"       #You can replace your state here.
+url = url.replace("place",place)
+url = url.replace("state",state)
+links=[]
+location_names=[]
+for i in range(0,30,10):
+    target_url=url.replace("*",str(i))
+    driver.get(target_url)
+    bsobj = BeautifulSoup(driver.page_source, 'html.parser')
+    print("strat")
+    place_div=bsobj.find('div',{'class':'fVbwn cdAAV cagLQ eZTON dofsx'})
+    if place_div is None:
+            break
+    for div in bsobj.findAll('div',{'class':'fVbwn cdAAV cagLQ eZTON dofsx'}):
+        #print(review)
+        links_div=div.findChildren("a" , recursive=False)
+        if len(links_div)<2:
+            continue
+        a = links_div[1]['href']
+        #print(a)
+        location_names.append(a.split('-')[-2])
+        a = 'https://www.tripadvisor.com'+ a
+        a = a[:(a.find('Reviews')+7)] + '-or{}' + a[(a.find('Reviews')+7):]
+        #print(a)
+        links.append(a)
 
-path_to_file = "./reviews.csv"
+reviews_list = []
+reviews_location=[]
+rating_list = []
+date_list = []
+count=0
+for link in links:
+    location=location_names[count]
+    count=count+1
+    flag=0
+    for i in range(5,20,5):
+        target_link=link.format(i)
+        print(target_link)
+        html2 = driver.get(target_link)
+        bsobj2 = BeautifulSoup(driver.page_source,'html.parser')    
+        reviews_section=bsobj2.find('div',{'class':'dHjBB'})
+        if reviews_section is None:
+            break
+        reviews_div=reviews_section.findChildren("div",{'class':'WlYyy diXIH dDKKM'} , recursive=True)
+        rating_svg = reviews_section.findChildren("svg", {'class':'RWYkj d H0'}, recursive=True)
+        date_div=reviews_section.findChildren("div", {'class':'WlYyy diXIH cspKb bQCoY'}, recursive=True)
 
-pages_to_scrape = 3
-
-url = "https://www.tripadvisor.com/Attraction_Review-g297698-d939620-Reviews-Nusa_Dua_Beach-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html"
-
-# import the webdriver
-driver = webdriver.Chrome('./chromedriver.exe')
-driver.get(url)
-
-# open the file to save the review
-csvFile = open(path_to_file, 'a', encoding="utf-8")
-csvWriter = csv.writer(csvFile)
-
-# change the value inside the range to save the number of reviews we're going to grab
-for i in range(0, pages_to_scrape):
-
-    # give the DOM time to load
-    time.sleep(2) 
-
-    # Click the "expand review" link to reveal the entire review.
-    driver.find_element_by_xpath(".//div[contains(@data-test-target, 'expand-review')]").click()
-
-    # Now we'll ask Selenium to look for elements in the page and save them to a variable. First lets define a  container that will hold all the reviews on the page. In a moment we'll parse these and save them:
-    container = driver.find_elements_by_xpath("//div[@data-reviewid]")
-
-    # Next we'll grab the date of the review:
-    dates = driver.find_elements_by_xpath(".//div[@class='_2fxQ4TOx']")
-    
-   # Now we'll look at the reviews in the container and parse them out
-
-    for j in range(len(container)): # A loop defined by the number of reviews
-
-        # Grab the rating
-        rating = container[j].find_element_by_xpath(".//span[contains(@class, 'ui_bubble_rating bubble_')]").get_attribute("class").split("_")[3]
-        # Grab the title
-        title = container[j].find_element_by_xpath(".//div[contains(@data-test-target, 'review-title')]").text
-        #Grab the review
-        review = container[j].find_element_by_xpath(".//q[@class='NejBf']").text.replace("\n", "  ")
-        #Grab the data
-        date = " ".join(dates[j].text.split(" ")[-2:])
+        if(len(reviews_div)==0 or 1==flag):
+            flag=0
+            break
+        print(target_link)
+      
+        for r, rs, d in zip(reviews_div, rating_svg, date_div):
+            # print(rs['aria-label'])
+            if r.span is None or rs is None or d is None:
+                flag=1
+                break
+            reviews_list.append(str(r.span.text.strip()))
+            reviews_location.append(location)
+            rating_list.append(rs['title'])
+            print(d.text.strip())
+            date_list.append(d.text.strip())
+            #sleep(1)
+            print(str(r.span.text.strip()))
+            print(rs['title'])
         
-        #Save that data in the csv and then continue to process the next review
-        csvWriter.writerow([date, rating, title, review]) 
-        
-    # When all the reviews in the container have been processed, change the page and repeat            
-    driver.find_element_by_xpath('.//a[@class="ui_button nav next primary "]').click()
-
-# When all pages have been processed, quit the driver
-driver.quit()
+        dataframe = pd.DataFrame({'location':reviews_location,'content':reviews_list, 'rating':rating_list, 'date':date_list})
+        dataframe.to_csv("tripadvisor_reviews_BALI.csv",index=True)#saving to the csv, you can change the name
