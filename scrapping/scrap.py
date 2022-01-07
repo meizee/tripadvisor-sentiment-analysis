@@ -7,15 +7,18 @@ from time import sleep
 driver = webdriver.Chrome(ChromeDriverManager().install())
 driver.implicitly_wait(30)
 # https://www.tripadvisor.com/Attractions-g297698-Activities-Nusa_Dua_Nusa_Dua_Peninsula_Bali.html
-url = "https://www.tripadvisor.com/Attractions-g608487-Activities-oa*-place_state.html" #ganti g....
-# Nusa_Dua_Nusa_Dua_Peninsula_Bali
-place="Legian_Kuta" #You can replace your place here.
-state="District_Bali"       #You can replace your state here.
+# https://www.tripadvisor.com/Attractions-g297701-Activities-Ubud_Gianyar_Regency_Bali.html
+# https://www.tripadvisor.com/Attractions-g469404-Activities-Seminyak_Kuta_District_Bali.html
+# https://www.tripadvisor.com/Attractions-g297697-Activities-Kuta_Kuta_District_Bali.html
+# https://www.tripadvisor.com/Attractions-g297700-Activities-Sanur_Denpasar_Bali.html
+url = "https://www.tripadvisor.com/Attractions-g297700-Activities-oa*-place_state.html" 
+place="Sanur" #You can replace your place here.
+state="Denpasar_Bali"       #You can replace your state here.
 url = url.replace("place",place)
 url = url.replace("state",state)
 links=[]
 location_names=[]
-for i in range(0,15,10):
+for i in range(0,15,15):
     target_url=url.replace("*",str(i))
     driver.get(target_url)
     bsobj = BeautifulSoup(driver.page_source, 'html.parser')
@@ -106,6 +109,6 @@ for link in links:
 
         
         dataframe = pd.DataFrame({'location':reviews_location,'content':reviews_list, 'rating':rating_list, 'date':date_list})
-        dataframe.to_csv("./tripadvisor_reviews_legian.csv",index=True)#saving to the csv, you can change the name
+        dataframe.to_csv("./tripadvisor_reviews_sanur.csv",index=True)#saving to the csv, you can change the name
     
     # print(target_links)
