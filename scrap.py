@@ -44,6 +44,7 @@ reviews_location=[]
 rating_list = []
 date_list = []
 target_links = []
+city_list = []
 count=0
 # print(links)
 # for word in links:
@@ -72,11 +73,17 @@ for link in links:
         # print(reviews_section)
         # print("=============")
         reviews_span=[]
+        city_span=[]
         reviews_div=reviews_section.find_all("div",{'class':'WlYyy diXIH dDKKM'} , recursive=True)
+        city_div = reviews_section.find_all("div", {'class':'WlYyy diXIH bQCoY'}, recursive=True)
         for div in reviews_div:
             span=div.find('span')
-            # print(span)
+            print(span)
             reviews_span.append(span)
+        for div in city_div:
+            span=div.find('span')
+            print(span)
+            city_span.append(span)
         # print(reviews_span)
         # print(reviews_div[0].span(class_ = 'NejBf'))
         # print("==========================================================================")
@@ -86,29 +93,34 @@ for link in links:
         # reviews_span=reviews_section.findChildren("span",{'class':'NejBf'} , recursive=True)
         rating_svg = reviews_section.findChildren("svg", {'class':'RWYkj d H0'}, recursive=True)
         date_div=reviews_section.findChildren("div", {'class':'WlYyy diXIH cspKb bQCoY'}, recursive=True)
+        # city_country_div=reviews_section.findChildren("div", {'class':'WlYyy diXIH bQCoY'}, recursive=True)
+
+        # WlYyy diXIH bQCoY
 
         # if(len(reviews_span)==0 or 1==flag):
         #     flag=0
         #     print("breakkkkkkkkkkkkkkkkkkk11111")
         #     break
       
-        for r, rs, d in zip(reviews_span, rating_svg, date_div):
+        for r, rs, d, c in zip(reviews_span, rating_svg, date_div, city_span):
             # print(rs['aria-label'])
-            if r is None or rs is None or d is None:
+            if r is None or rs is None or d is None or c is None:
                 flag=1
-                print("breakkkkkkkkkkkkkkkkkkk2")
+                print("continue")
                 continue
             reviews_list.append(str(r.text.strip()))
             reviews_location.append(location)
             rating_list.append(rs['title'])
             # print(d.text.strip())
             date_list.append(d.text.strip())
+            print(c.text.strip())
+            city_list.append(c.text.strip())
             #sleep(1)
             # print(str(r.span.text.strip()))
             # print(rs['title'])
 
         
-        dataframe = pd.DataFrame({'location':reviews_location,'content':reviews_list, 'rating':rating_list, 'date':date_list})
+        dataframe = pd.DataFrame({'location':reviews_location,'content':reviews_list, 'rating':rating_list, 'date':date_list, 'city':city_list})
         dataframe.to_csv("./tripadvisor_reviews_sanur.csv",index=True)#saving to the csv, you can change the name
     
     # print(target_links)
